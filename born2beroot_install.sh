@@ -124,16 +124,27 @@ read -p "Setup wordpress ? (y/n): " ACTION
 
 if [ "$ACTION" == "y" ]; then
 	echo "Setting up wordpress..."
-	apt install curl
+	apt install curl -y
 	curl -sSL https://packages.sury.org/php/README.txt | sudo bash -x
 	apt update -y
 	apt install php8.2 -y
 	apt install php-common php-cgi php-cli php-mysql -y
 	apt purge apache2 -y
 	apt autoremove -y
-	apt install lighttpd
+	apt install lighttpd -y
+	
 	systemctl start lighttpd
 	systemctl enable lighttpd
+	lighty-enable-mod fastcgi
+	lighty-enable-mod fastcgi-php
+	service lighttpd force-reload
+	
+	apt install mariadb-server -y
+	systemctl start mariadb
+	systemctl enable mariadb
+
+	mysql_secure_installation
+	systemctl restart mariadb
 	
 	ufw allow 80
 	ufw allow 443
