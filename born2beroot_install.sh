@@ -130,7 +130,7 @@ if [ "$ACTION" == "y" ]; then
 	apt install php8.2 -y
 	apt install php-common php-cgi php-cli php-mysql -y
 	apt purge apache2 -y
-	apt autoremove -y
+	#apt autoremove -y
 	apt install lighttpd -y
 
 	systemctl start lighttpd
@@ -164,8 +164,7 @@ if [ "$ACTION" == "y" ]; then
 	echo "define('DB_USER', 'admin');" >> /var/www/html/wp-config.php
 	echo "define('DB_PASSWORD', '$DB_PASSWD_WP');" >> /var/www/html/wp-config.php
 	echo "define('DB_HOST', 'localhost');" >> /var/www/html/wp-config.php
-	ufw allow 80
-	ufw allow 443
+	ufw allow http
 	echo "Wordpress setup completed."
 elif [ "$ACTION" == "n" ]; then
 	echo "Skipping wordpress setup."
