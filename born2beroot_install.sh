@@ -49,21 +49,24 @@ service ssh restart
 # Install and configure ufw
 echo "Setup firewall..."
 apt install ufw -y
-sudo ufw enable
+ufw reset
+ufw enable
 ufw allow proto tcp to 0.0.0.0/0 port 4242
-sudo ufw allow 80 # Allow HTTP traffic if needed
+ufw allow 80 # Allow HTTP traffic if needed
+
 
 # Install password quality checking library (libpam-pwquality)
 echo "Install libpam-pwquality..."
 apt install libpam-pwquality
 echo "minlen=10" | sudo tee -a "/etc/pam.d/common-password"
 sed -i 's/password    requisite         pam_pwquality.so retry=3/password    requisite         pam_pwquality.so retry=3 lcredit =-1 ucredit=-1 dcredit=-1 maxrepeat=3 usercheck=0 difok=7 enforce_for_root/' /etc/pam.d/common-password
-sed -i 's/PASS_MAX_DAYS 9999/PASS_MAX_DAYS 30/' /etc/login.defs
-sed -i 's/PASS_MIN_DAYS 0/PASS_MIN_DAYS 2/' /etc/login.defs
+sed -i 's/PASS_MAX_DAYS*9999/PASS_MAX_DAYS 30/' /etc/login.defs
+sed -i 's/PASS_MIN_DAYS*0/PASS_MIN_DAYS 2/' /etc/login.defs
 #echo "Defaults  env_reset" | sudo tee -a "/etc/sudoers"
 #echo "Defaults  mail_badpass" | sudo tee -a "/etc/sudoers"
 #echo 'Defaults  secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin' | sudo tee -a "/etc/sudoers"
 echo 'Defaults  badpass_message="Password is wrong, please try again!"' | sudo tee -a "/etc/sudoers"
+mkdir /var/log/sudo
 echo 'Defaults  logfile="/var/log/sudo/sudo.log"' | sudo tee -a "/etc/sudoers"
 echo "Defaults  log_input, log_input" | sudo tee -a "/etc/sudoers"
 echo "Defaults  requiretty" | sudo tee -a "/etc/sudoers"
@@ -74,7 +77,7 @@ echo "Setup monitoring script with crontab"
 apt install -y net-tools
 crontab -l > crontmp
 echo "*/10 * * * * /usr/local/bin/monitoring.sh" >> crontmp
-contab crontmp
+crontab crontmp
 rm crontmp
 
 echo "Installation completed."
