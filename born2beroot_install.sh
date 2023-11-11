@@ -74,7 +74,6 @@ if [ "$ACTION" == "y" ]; then
 	apt install ufw -y
 	ufw enable
 	ufw allow proto tcp to 0.0.0.0/0 port 4242
-	ufw allow 80 # Allow HTTP traffic if needed
 elif [ "$ACTION" == "n" ]; then
 	echo "Skipping firewall installation and configuration."
 fi
@@ -111,7 +110,7 @@ if [ "$ACTION" == "y" ]; then
 	echo "Setting up monitoring script with crontab..."
 	apt install -y net-tools
 	crontab -u root -l > crontmp
-	echo "*/10 * * * * /usr/local/bin/monitoring.sh" >> crontmp
+	echo "*/10 * * * * bash /usr/local/bin/monitoring.sh" >> crontmp
 	crontab -u root crontmp
 	rm crontmp
 	cp monitoring.sh /usr/local/bin/monitoring.sh
