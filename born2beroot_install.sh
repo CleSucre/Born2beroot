@@ -1,90 +1,91 @@
 #!/bin/bash
 
 if [[ $EUID -ne 0 ]]; then
-    echo "This script must be run with administrative privileges (sudo)."
+    echo "\033[31mThis script must be run with administrative privileges (sudo)."
     exit 1
 fi
 
 # Prompt the user for the desired username
-read -p "Enter the desired username: " USERNAME
+read -p "\033[94mEnter the desired username: " USERNAME
 
 # Update system
-read -p "Update the system ? (y/n): " ACTION
+read -p "\033[93mUpdate the system ? (y/n): " ACTION
 
 if [ "$ACTION" == "y" ]; then
-	echo "Executing system update..."
+	echo "\033[32mExecuting system update..."
 	apt update -y
 	apt upgrade -y
-	echo "System updated."
+	echo "\033[32mSystem updated."
 elif [ "$ACTION" == "n" ]; then
-	echo "Skipping system update."
+	echo "\033[31mSkipping system update."
 fi
 
 # Install sudo
 apt install sudo -y
 
 # Setup users and groups
-read -p "Setup users and groups and adding $USERNAME to sudo users ? (y/n): " ACTION
+read -p "\033[93mSetup users and groups and adding $USERNAME to sudo users ? (y/n): " ACTION
 
 if [ "$ACTION" == "y" ]; then
-	echo "Executing users and groups setup..."
+	echo "\033[32mExecuting users and groups setup..."
 	adduser $USERNAME sudo
 	echo "$USERNAME	ALL=(ALL) ALL" | sudo tee -a "/etc/sudoers"
 	groupadd user42
 	sudo usermod -aG user42 $USERNAME
-	echo "Users and groups setup completed."
+	echo "\033[32mUsers and groups setup completed."
 elif [ "$ACTION" == "n" ]; then
-	echo "Skipping users and groups setup."
+	echo "\033[31mSkipping users and groups setup."
 fi
 
 # Install wget and vim
-read -p "Install git, wget, vim and Oh my zsh ? (y/n): " ACTION
+read -p "\033[93mInstall git, wget, vim and Oh my zsh ? (y/n): " ACTION
 
 if [ "$ACTION" == "y" ]; then
-	echo "Installing wget and vim..."
+	echo "\033[32mInstalling wget and vim..."
 	apt install git -y
 	apt install wget -y
 	apt install vim -y
 	sh -c "$(wget https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)"
-	echo "wget and vim installed."
+	echo "\033[32mwget and vim installed."
 elif [ "$ACTION" == "n" ]; then
-	echo "Skipping wget and vim installation."
+	echo "\033[31mSkipping wget and vim installation."
 fi
 
 # Install and configure openssh-server
-read -p "Setup ssh server ? (y/n): " ACTION
+read -p "\033[93mSetup ssh server ? (y/n): " ACTION
 
 if [ "$ACTION" == "y" ]; then
-	echo "Installing and configuring ssh server..."
+	echo "\033[32mInstalling and configuring ssh server..."
 	apt update -y
 	apt install openssh-server -y
 	service ssh restart
 	sed -i 's/#Port 22/Port 4242/' /etc/ssh/sshd_config
 	service ssh restart
-	echo "ssh server installed and configured."
+	echo "\033[32mssh server installed and configured."
 elif [ "$ACTION" == "n" ]; then
-	echo "Skipping ssh server installation and configuration."
+	echo "\033[31mSkipping ssh server installation and configuration."
 fi
 
 # Install and configure ufw
-read -p "Setup firewall ? (y/n): " ACTION
+read -p "\033[93mSetup firewall ? (y/n): " ACTION
 
 if [ "$ACTION" == "y" ]; then
-	echo "Installing and configuring firewall..."
+	echo "\033[32mInstalling and configuring firewall..."
 	apt install ufw -y
 	ufw --force reset
 	ufw enable
 	ufw allow proto tcp to 0.0.0.0/0 port 4242
 	ufw allow 80 # Allow HTTP traffic if needed
+	echo "\033[32mFirewall installed and configured."
 elif [ "$ACTION" == "n" ]; then
-	echo "Skipping firewall installation and configuration."
+	echo "\033[31mSkipping firewall installation and configuration."
 fi
 
 # Install password quality checking library (libpam-pwquality)
-read -p "Install libpam-pwquality ? (y/n): " ACTION
+read -p "\033[93mInstall libpam-pwquality ? (y/n): " ACTION
 
 if [ "$ACTION" == "y" ]; then
-	echo "Installing libpam-pwquality..."
+	echo "\033[32mInstalling libpam-pwquality..."
 	apt install libpam-pwquality -y
 	echo "minlen=10" | sudo tee -a "/etc/pam.d/common-password"
 
@@ -100,28 +101,28 @@ if [ "$ACTION" == "y" ]; then
 	echo "Defaults	log_input, log_input" | sudo tee -a "/etc/sudoers"
 	echo "Defaults	requiretty" | sudo tee -a "/etc/sudoers"
 	echo "$USERNAME	ALL=(ALL) NOPASSWD: /usr/local/bin/monitoring.sh" | sudo tee -a "/etc/sudoers"
-	echo "libpam-pwquality installed."
+	echo "\033[32mlibpam-pwquality installed."
 elif [ "$ACTION" == "n" ]; then
-	echo "Skipping libpam-pwquality installation."
+	echo "\033[31mSkipping libpam-pwquality installation."
 fi
 
 # Setup crontab script
-read -p "Setup monitoring script with crontab ? (y/n): " ACTION
+read -p "\033[93mSetup monitoring script with crontab ? (y/n): " ACTION
 
 if [ "$ACTION" == "y" ]; then
-	echo "Setting up monitoring script with crontab..."
+	echo "\033[32mSetting up monitoring script with crontab..."
 	apt install -y net-tools
 	crontab -l > crontmp
 	echo "*/10 * * * * /usr/local/bin/monitoring.sh" >> crontmp
 	crontab crontmp
 	rm crontmp
-	rm crontmp
 	#TODO: add /usr/local/bin/monitoring.sh
-	echo "Monitoring script setup completed."
+
+	
+
+	echo "\033[32mMonitoring script setup completed."
 elif [ "$ACTION" == "n" ]; then
-	echo "Skipping monitoring script setup."
+	echo "\033[31mSkipping monitoring script setup."
 fi
 
-
-
-echo "Installation completed."
+echo "\033[32mInstallation completed."
