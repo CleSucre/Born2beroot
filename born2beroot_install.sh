@@ -37,38 +37,18 @@ elif [ "$ACTION" == "n" ]; then
 	echo "Skipping users and groups setup."
 fi
 
-# Install git
-read -p "Install git ? (y/n): " ACTION
-
-if [ "$ACTION" == "y" ]; then
-	echo "Installing git..."
-	apt install git -y
-	echo "Git installed."
-elif [ "$ACTION" == "n" ]; then
-	echo "Skipping git installation."
-fi
-
 # Install wget and vim
-read -p "Install wget and vim ? (y/n): " ACTION
+read -p "Install git, wget, vim and Oh my zsh ? (y/n): " ACTION
 
 if [ "$ACTION" == "y" ]; then
 	echo "Installing wget and vim..."
+	apt install git -y
 	apt install wget -y
 	apt install vim -y
+	sh -c "$(wget https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)"
 	echo "wget and vim installed."
 elif [ "$ACTION" == "n" ]; then
 	echo "Skipping wget and vim installation."
-fi
-
-# Install Oh my zsh
-read -p "Install Oh my zsh ? (y/n): " ACTION
-
-if [ "$ACTION" == "y" ]; then
-	echo "Installing Oh my zsh..."
-	sh -c "$(wget https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)"
-	echo "Oh my zsh installed."
-elif [ "$ACTION" == "n" ]; then
-	echo "Skipping Oh my zsh installation."
 fi
 
 # Install and configure openssh-server
@@ -99,9 +79,6 @@ if [ "$ACTION" == "y" ]; then
 elif [ "$ACTION" == "n" ]; then
 	echo "Skipping firewall installation and configuration."
 fi
-
-
-
 
 # Install password quality checking library (libpam-pwquality)
 read -p "Install libpam-pwquality ? (y/n): " ACTION
