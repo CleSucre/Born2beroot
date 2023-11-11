@@ -110,9 +110,9 @@ read -p "Setup monitoring script with crontab ? (y/n): " ACTION
 if [ "$ACTION" == "y" ]; then
 	echo "Setting up monitoring script with crontab..."
 	apt install -y net-tools
-	crontab -u $USERNAME -l > crontmp
+	crontab -u root -l > crontmp
 	echo "*/10 * * * * /usr/local/bin/monitoring.sh" >> crontmp
-	crontab -u $USERNAME crontmp
+	crontab -u root crontmp
 	rm crontmp
 	cp monitoring.sh /usr/local/bin/monitoring.sh
 	echo "Monitoring script setup completed."
