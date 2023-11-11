@@ -72,7 +72,7 @@ read -p "Setup firewall ? (y/n): " ACTION
 if [ "$ACTION" == "y" ]; then
 	echo "Installing and configuring firewall..."
 	apt install ufw -y
-	ufw reset
+	ufw --force reset
 	ufw enable
 	ufw allow proto tcp to 0.0.0.0/0 port 4242
 	ufw allow 80 # Allow HTTP traffic if needed
