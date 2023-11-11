@@ -109,14 +109,45 @@ read -p "Setup monitoring script with crontab ? (y/n): " ACTION
 if [ "$ACTION" == "y" ]; then
 	echo "Setting up monitoring script with crontab..."
 	apt install -y net-tools
-	crontab -u root -l > crontmp
+	crontab -u $USERNAME -l > crontmp
 	echo "*/10 * * * * bash /usr/local/bin/monitoring.sh" >> crontmp
-	crontab -u root crontmp
+	crontab -u $USERNAME crontmp
 	rm crontmp
 	cp monitoring.sh /usr/local/bin/monitoring.sh
 	echo "Monitoring script setup completed."
 elif [ "$ACTION" == "n" ]; then
 	echo "Skipping monitoring script setup."
+fi
+
+# Setup bonus part
+read -p "Setup wordpress ? (y/n): " ACTION
+
+if [ "$ACTION" == "y" ]; then
+	echo "Setting up wordpress..."
+	apt install -y php7.3 php7.3-fpm php7.3-mysql php-common php7.3-cli php7.3-common php7.3-json php7.3-opcache php7.3-readline php-mbstring php-zip php-gd php-curl php-xml php-pear php-bcmath
+	service php7.3-fpm start
+	apt install -y nginx
+	service nginx start
+	apt install -y mariadb-server
+	service mysql start
+	mysql_secure_installation
+	mysql -u root -p
+	echo "CREATE DATABASE wordpress;" | mysql -u root -p
+	echo "GRANT ALL PRIVILEGES ON wordpress.* TO 'wordpressuser'@'localhost' IDENTIFIED BY 'password';" | mysql -u root -p
+	echo "FLUSH PRIVILEGES;" | mysql -u root -p
+	echo "EXIT;" | mysql -u root -p
+	wget https://wordpress.org/latest.tar.gz
+	tar -zxvf latest.tar.gz
+	mv wordpress /var/www/html/
+	chown -R www-data:www-data /var/www/html/wordpress
+	chmod -R 755 /var/www/html/wordpress
+	cp wp-config.php /var/www/html/wordpress
+	service nginx restart
+	service php7.3-fpm restart
+	service mysql restart
+	echo "Wordpress setup completed."
+elif [ "$ACTION" == "n" ]; then
+	echo "Skipping wordpress setup."
 fi
 
 echo "Installation completed."
