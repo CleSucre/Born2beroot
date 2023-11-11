@@ -132,20 +132,38 @@ if [ "$ACTION" == "y" ]; then
 	apt purge apache2 -y
 	apt autoremove -y
 	apt install lighttpd -y
-	
+
 	systemctl start lighttpd
 	systemctl enable lighttpd
 	lighty-enable-mod fastcgi
 	lighty-enable-mod fastcgi-php
 	service lighttpd force-reload
-	
+
 	apt install mariadb-server -y
 	systemctl start mariadb
 	systemctl enable mariadb
 
 	mysql_secure_installation
 	systemctl restart mariadb
-	
+
+	read -p "Please renter database root password: " DB_PASSWD
+	read -p "Enter password for the database word press: " DB_PASSWD_WP
+	mysql -u root --password=DB_PASSWD -e "CREATE DATABASE wordpress_db;"
+	mysql -u root --password=DB_PASSWD -e "CREATE USER 'admin'@'localhost' IDENTIFIED BY '$DB_PASSWD_WP';"
+	mysql -u root --password=DB_PASSWD -e "GRANT ALL ON wordpress_db.* TO 'admin'@'localhost' IDENTIFIED BY '$DB_PASSWD_WP' WITH GRANT OPTION;"
+	mysql -u root --password=DB_PASSWD -e "FLUSH PRIVILEGES;"
+
+	apt install tar -y
+	cd /var/www/html/
+	wget http://wordpress.org/latest.tar.gz
+	tar -xzvf latest.tar.gz
+	mv wordpress/* /var/www/html/
+	rm -rf latest.tar.gz wordpress/
+	echo "<?php" >> /var/www/html/wp-config.php
+	echo "define('DB_NAME', 'wordpress_db');" >> /var/www/html/wp-config.php
+	echo "define('DB_USER', 'admin');" >> /var/www/html/wp-config.php
+	echo "define('DB_PASSWORD', '$DB_PASSWD_WP');" >> /var/www/html/wp-config.php
+	echo "define('DB_HOST', 'localhost');" >> /var/www/html/wp-config.php
 	ufw allow 80
 	ufw allow 443
 	echo "Wordpress setup completed."
