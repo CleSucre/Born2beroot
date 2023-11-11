@@ -86,7 +86,7 @@ read -p "Install libpam-pwquality ? (y/n): " ACTION
 if [ "$ACTION" == "y" ]; then
 	echo "Installing libpam-pwquality..."
 	apt install libpam-pwquality -y
-	echo "minlen=10" | sudo tee -a "/etc/pam.d/common-password"
+	sed -i 's/password [success=2 default=ignore] pam_unix.so obscure sha512/password [success=2 default=ignore] pam_unix.so obscure sha512 minlen=10/' /etc/pam.d/common-password
 
 	#TODO: check if the following lines are correct
 
@@ -115,13 +115,10 @@ if [ "$ACTION" == "y" ]; then
 	echo "*/10 * * * * /usr/local/bin/monitoring.sh" >> crontmp
 	crontab crontmp
 	rm crontmp
-	rm crontmp
 	#TODO: add /usr/local/bin/monitoring.sh
 	echo "Monitoring script setup completed."
 elif [ "$ACTION" == "n" ]; then
 	echo "Skipping monitoring script setup."
 fi
-
-
 
 echo "Installation completed."
