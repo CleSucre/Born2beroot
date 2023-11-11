@@ -114,7 +114,7 @@ if [ "$ACTION" == "y" ]; then
 	echo "*/10 * * * * /usr/local/bin/monitoring.sh" >> crontmp
 	crontab crontmp
 	rm crontmp
-	#TODO: add /usr/local/bin/monitoring.sh
+	cp monitoring.sh /usr/local/bin/monitoring.sh
 	echo "Monitoring script setup completed."
 elif [ "$ACTION" == "n" ]; then
 	echo "Skipping monitoring script setup."
