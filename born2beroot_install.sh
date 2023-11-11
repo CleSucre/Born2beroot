@@ -124,27 +124,19 @@ read -p "Setup wordpress ? (y/n): " ACTION
 
 if [ "$ACTION" == "y" ]; then
 	echo "Setting up wordpress..."
-	apt install -y php7.3 php7.3-fpm php7.3-mysql php-common php7.3-cli php7.3-common php7.3-json php7.3-opcache php7.3-readline php-mbstring php-zip php-gd php-curl php-xml php-pear php-bcmath
-	service php7.3-fpm start
-	apt install -y nginx
-	service nginx start
-	apt install -y mariadb-server
-	service mysql start
-	mysql_secure_installation
-	mysql -u root -p
-	echo "CREATE DATABASE wordpress;" | mysql -u root -p
-	echo "GRANT ALL PRIVILEGES ON wordpress.* TO 'wordpressuser'@'localhost' IDENTIFIED BY 'password';" | mysql -u root -p
-	echo "FLUSH PRIVILEGES;" | mysql -u root -p
-	echo "EXIT;" | mysql -u root -p
-	wget https://wordpress.org/latest.tar.gz
-	tar -zxvf latest.tar.gz
-	mv wordpress /var/www/html/
-	chown -R www-data:www-data /var/www/html/wordpress
-	chmod -R 755 /var/www/html/wordpress
-	cp wp-config.php /var/www/html/wordpress
-	service nginx restart
-	service php7.3-fpm restart
-	service mysql restart
+	apt install curl
+	curl -sSL https://packages.sury.org/php/README.txt | sudo bash -x
+	apt update -y
+	apt install php8.2 -y
+	apt install php-common php-cgi php-cli php-mysql -y
+	apt purge apache2 -y
+	apt autoremove -y
+	apt install lighttpd
+	systemctl start lighttpd
+	systemctl enable lighttpd
+	
+	ufw allow 80
+	ufw allow 443
 	echo "Wordpress setup completed."
 elif [ "$ACTION" == "n" ]; then
 	echo "Skipping wordpress setup."
