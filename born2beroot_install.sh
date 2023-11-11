@@ -90,13 +90,10 @@ if [ "$ACTION" == "y" ]; then
 
 	#TODO: check if the following lines are correct
 
-	pam-config -a --cracklib enforce_for_root difok=7 retry=3 minlen=10 ucredit=-1 dcredit=-1 maxrepeat=3 reject_username
-
-	sed -i 's/PASS_MAX_DAYS	9999/PASS_MAX_DAYS	30/' /etc/login.defs
+	sed -i 's/password	requisite			pam_pwquality.so retry=3/password	requisite			pam_pwquality.so retry=3 lcredit =-1 ucredit=-1 dcredit=-1 maxrepeat=3 usercheck=0 difok=7 enforce_for_root/'
+	sed -i 's/PASS_MAX_DAYS	99999/PASS_MAX_DAYS	30/' /etc/login.defs
 	sed -i 's/PASS_MIN_DAYS	0/PASS_MIN_DAYS	2/' /etc/login.defs
-	#echo "Defaults	env_reset" | sudo tee -a "/etc/sudoers"
-	#echo "Defaults	mail_badpass" | sudo tee -a "/etc/sudoers"
-	#echo 'Defaults	secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin' | sudo tee -a "/etc/sudoers"
+	sed -i 's/Defaults	secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"/Defaults	secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"/' /etc/sudoers
 	echo 'Defaults	badpass_message="Password is wrong, please try again!"' | sudo tee -a "/etc/sudoers"
 	mkdir /var/log/sudo
 	echo 'Defaults	logfile="/var/log/sudo/sudo.log"' | sudo tee -a "/etc/sudoers"
