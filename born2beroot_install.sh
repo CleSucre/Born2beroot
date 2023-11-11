@@ -28,7 +28,7 @@ read -p "Setup users and groups and adding $USERNAME to sudo users ? (y/n): " AC
 
 if [ "$ACTION" == "y" ]; then
 	echo "Executing users and groups setup..."
-	adduser $USERNAME sudo
+	usermod -aG sudo $USERNAME
 	echo "$USERNAME	ALL=(ALL) ALL" | sudo tee -a "/etc/sudoers"
 	groupadd user42
 	sudo usermod -aG user42 $USERNAME
@@ -72,7 +72,6 @@ read -p "Setup firewall ? (y/n): " ACTION
 if [ "$ACTION" == "y" ]; then
 	echo "Installing and configuring firewall..."
 	apt install ufw -y
-	ufw --force reset
 	ufw enable
 	ufw allow proto tcp to 0.0.0.0/0 port 4242
 	ufw allow 80 # Allow HTTP traffic if needed
