@@ -45,7 +45,7 @@ if [ "$ACTION" == "y" ]; then
 	apt install git -y
 	apt install wget -y
 	apt install vim -y
-	sh -c "$(wget https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)"
+	apt install zsh -y
 	echo "wget and vim installed."
 elif [ "$ACTION" == "n" ]; then
 	echo "Skipping wget and vim installation."
@@ -72,8 +72,8 @@ read -p "Setup firewall ? (y/n): " ACTION
 if [ "$ACTION" == "y" ]; then
 	echo "Installing and configuring firewall..."
 	apt install ufw -y
+	ufw allow 4242
 	ufw enable
-	ufw allow proto tcp to 0.0.0.0/0 port 4242
 elif [ "$ACTION" == "n" ]; then
 	echo "Skipping firewall installation and configuration."
 fi
@@ -124,48 +124,32 @@ read -p "Setup wordpress ? (y/n): " ACTION
 
 if [ "$ACTION" == "y" ]; then
 	echo "Setting up wordpress..."
-	apt install curl -y
-	curl -sSL https://packages.sury.org/php/README.txt | sudo bash -x
 	apt update -y
-	apt install php8.2 -y
-	apt install php-common php-cgi php-cli php-mysql -y
-	apt purge apache2 -y
-	#apt autoremove -y
-	apt install lighttpd -y
-
-	systemctl start lighttpd
-	systemctl enable lighttpd
-	lighty-enable-mod fastcgi
-	lighty-enable-mod fastcgi-php
-	service lighttpd force-reload
-
-	apt install mariadb-server -y
-	systemctl start mariadb
-	systemctl enable mariadb
-
+	ufw allow 80
+	apt install lighttpd wget tar -y
+	wget http://wordpress.org/latest.tar.gz
+	tar -xvf latest.tar.gz
+	rm -rf /var/www/html
+	mv wordpress /var/www/html
+	chmod -R 755html
+	rm -rf latest.tar.gz
+	apt install mariadb-server
 	mysql_secure_installation
-	systemctl restart mariadb
-
 	read -p "Please renter database root password: " DB_PASSWD
 	read -p "Enter password for the database word press: " DB_PASSWD_WP
 	mysql -u root --password=DB_PASSWD -e "CREATE DATABASE wordpress_db;"
-	mysql -u root --password=DB_PASSWD -e "CREATE USER 'admin'@'localhost' IDENTIFIED BY '$DB_PASSWD_WP';"
-	mysql -u root --password=DB_PASSWD -e "GRANT ALL ON wordpress_db.* TO 'admin'@'localhost' IDENTIFIED BY '$DB_PASSWD_WP' WITH GRANT OPTION;"
+	mysql -u root --password=DB_PASSWD -e "CREATE USER '$USERNAME'@'localhost' IDENTIFIED BY '$DB_PASSWD_WP';"
+	mysql -u root --password=DB_PASSWD -e "GRANT ALL ON wordpress_db.* TO '$USERNAME'@'localhost' IDENTIFIED BY '$DB_PASSWD_WP' WITH GRANT OPTION;"
 	mysql -u root --password=DB_PASSWD -e "FLUSH PRIVILEGES;"
-
-	apt install tar -y
-	cd /var/www/html/
-	wget http://wordpress.org/latest.tar.gz
-	tar -xzvf latest.tar.gz
-	mv wordpress/* /var/www/html/
-	rm -rf latest.tar.gz wordpress/
-	echo "<?php" >> /var/www/html/wp-config.php
-	echo "define('DB_NAME', 'wordpress_db');" >> /var/www/html/wp-config.php
-	echo "define('DB_USER', 'admin');" >> /var/www/html/wp-config.php
-	echo "define('DB_PASSWORD', '$DB_PASSWD_WP');" >> /var/www/html/wp-config.php
-	echo "define('DB_HOST', 'localhost');" >> /var/www/html/wp-config.php
-	ufw allow http
-	echo "Wordpress setup completed."
+	apt install php-cgi php-mysql
+	cp /var/www/html/wp-config-sample.php /var/www/html/wp-config.php
+	sed -i "s/define( 'DB_NAME', 'database_name_here' );/define('DB_NAME', 'wordpress_db');/" /var/www/html/wp-config.php
+	sed -i "s/define( 'DB_USER', 'username_here' );/define('DB_USER', '$USERNAME');/" /var/www/html/wp-config.php
+	sed -i "s/define( 'DB_PASSWORD', 'password_here' );/define('DB_PASSWORD', '$DB_PASSWD_WP');/" /var/www/html/wp-config.php
+	lighty-enable-mod fastcgi
+	lighty-enable-mod fastcgi-php
+	service lighttpd force-reload
+	echo "Wordpress setup completed, connect to localhost:80 to continue."
 elif [ "$ACTION" == "n" ]; then
 	echo "Skipping wordpress setup."
 fi
