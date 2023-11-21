@@ -103,9 +103,6 @@ if [ "$ACTION" == "y" ]; then
 	echo "Installing libpam-pwquality..."
 	apt install libpam-pwquality -y
 	sed -i 's/password [success=2 default=ignore] pam_unix.so obscure sha512/password [success=2 default=ignore] pam_unix.so obscure sha512 minlen=10/' /etc/pam.d/common-password
-
-	#TODO: check if the following lines are correct
-
 	sed -i 's/password	requisite			pam_pwquality.so retry=3/password	requisite			pam_pwquality.so retry=3 minlen=10 lcredit =-1 ucredit=-1 dcredit=-1 maxrepeat=3 usercheck=0 difok=7 enforce_for_root/' /etc/pam.d/common-password
 	sed -i 's/PASS_MAX_DAYS	99999/PASS_MAX_DAYS	30/' /etc/login.defs
 	sed -i 's/PASS_MIN_DAYS	0/PASS_MIN_DAYS	2/' /etc/login.defs
@@ -175,7 +172,24 @@ elif [ "$ACTION" == "n" ]; then
 	echo "Skipping wordpress setup."
 fi
 
-# Setup PocketMine-MP
+# Setup PocketMine-MP TODO: test it :)
+read -p "Setup PocketMine-MP. A server software for Minecraft: Bedrock Edition in PHP ? (y/n): " ACTION
+
+if [ "$ACTION" == "y" ]; then
+	echo "Setting up PocketMine-MP..."
+	ufw allow proto udp port 19132
+	mkdir /home/$USERNAME/pocketmine-mp
+	cd /home/$USERNAME/pocketmine-mp
+	wget https://github.com/pmmp/PocketMine-MP/releases/latest/download/PocketMine-MP.phar
+	wget https://github.com/pmmp/PocketMine-MP/releases/latest/download/start.sh
+	#this line could be wrong after PM6 release, TODO: find another way to install PHP (Installation script made by dylan?: https://doc.pmmp.io/en/rtfd/installation/get-dot-pmmp-dot-io.html)
+	wget https://github.com/pmmp/PHP-Binaries/releases/latest/download/PHP-Linux-x86_64-PM5.tar.gz
+	tar -xvf PHP-Linux-x86_64-PM5.tar.gz
+	rm PHP-Linux-x86_64-PM5.tar.gz
+	echo "PocketMine-MP setup completed, go to /home/$USERNAME/pocketmine-mp, execute 'bash start.sh', and connect to localhost:19132 to play."
+elif [ "$ACTION" == "n" ]; then
+	echo "Skipping PocketMine-MP setup."
+fi
 
 
 # Rebooting
