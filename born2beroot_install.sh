@@ -21,7 +21,15 @@ elif [ "$ACTION" == "n" ]; then
 fi
 
 # Install sudo
-apt install sudo -y
+read -p "Install sudo ? (y/n): " ACTION
+
+if [ "$ACTION" == "y" ]; then
+	echo "Installing sudo..."
+	apt install sudo -y
+	echo "Sudo installed."
+elif [ "$ACTION" == "n" ]; then
+	echo "Skipping system update."
+fi
 
 # Setup users and groups
 read -p "Setup users and groups and adding $USERNAME to sudo users ? (y/n): " ACTION
@@ -88,7 +96,7 @@ if [ "$ACTION" == "y" ]; then
 
 	#TODO: check if the following lines are correct
 
-	sed -i 's/password	requisite			pam_pwquality.so retry=3/password	requisite			pam_pwquality.so retry=3 lcredit =-1 ucredit=-1 dcredit=-1 maxrepeat=3 usercheck=0 difok=7 enforce_for_root/' /etc/pam.d/common-password
+	sed -i 's/password	requisite			pam_pwquality.so retry=3/password	requisite			pam_pwquality.so retry=3 minlen=10 lcredit =-1 ucredit=-1 dcredit=-1 maxrepeat=3 usercheck=0 difok=7 enforce_for_root/' /etc/pam.d/common-password
 	sed -i 's/PASS_MAX_DAYS	99999/PASS_MAX_DAYS	30/' /etc/login.defs
 	sed -i 's/PASS_MIN_DAYS	0/PASS_MIN_DAYS	2/' /etc/login.defs
 	sed -i 's/Defaults	secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"/Defaults	secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"/' /etc/sudoers
@@ -96,8 +104,11 @@ if [ "$ACTION" == "y" ]; then
 	mkdir /var/log/sudo
 	echo 'Defaults	logfile="/var/log/sudo/sudo.log"' | sudo tee -a "/etc/sudoers"
 	echo "Defaults	log_input, log_input" | sudo tee -a "/etc/sudoers"
+	echo 'Defaults	iolog_dir="/var/log/sudo/out"' | sudo tee -a "/etc/sudoers"
 	echo "Defaults	requiretty" | sudo tee -a "/etc/sudoers"
 	echo "$USERNAME	ALL=(ALL) NOPASSWD: /usr/local/bin/monitoring.sh" | sudo tee -a "/etc/sudoers"
+	chage -M 30 -m 2 -W 7 $USERNAME
+	chage -M 30 -m 2 -W 7 root
 	echo "libpam-pwquality installed."
 elif [ "$ACTION" == "n" ]; then
 	echo "Skipping libpam-pwquality installation."
@@ -109,9 +120,9 @@ read -p "Setup monitoring script with crontab ? (y/n): " ACTION
 if [ "$ACTION" == "y" ]; then
 	echo "Setting up monitoring script with crontab..."
 	apt install -y net-tools
-	crontab -u $USERNAME -l > crontmp
+	crontab -u root -l > crontmp
 	echo "*/10 * * * * bash /usr/local/bin/monitoring.sh" >> crontmp
-	crontab -u $USERNAME crontmp
+	crontab -u root crontmp
 	rm crontmp
 	cp monitoring.sh /usr/local/bin/monitoring.sh
 	echo "Monitoring script setup completed."
@@ -134,7 +145,7 @@ if [ "$ACTION" == "y" ]; then
 	chmod -R 755html
 	rm -rf latest.tar.gz
 	apt install mariadb-server
-	mysql_secure_installation
+	mysql_secure_installation # could probably automate https://stackoverflow.com/questions/24270733/automate-mysql-secure-installation-with-echo-command-via-a-shell-script
 	read -p "Please renter database root password: " DB_PASSWD
 	read -p "Enter password for the database word press: " DB_PASSWD_WP
 	mysql -u root --password=DB_PASSWD -e "CREATE DATABASE wordpress_db;"
@@ -152,6 +163,19 @@ if [ "$ACTION" == "y" ]; then
 	echo "Wordpress setup completed, connect to localhost:80 to continue."
 elif [ "$ACTION" == "n" ]; then
 	echo "Skipping wordpress setup."
+fi
+
+# Setup PocketMine-MP
+
+
+# Rebooting
+read -p "Reboot ? (y/n): " ACTION
+
+if [ "$ACTION" == "y" ]; then
+	echo "Rebooting..."
+	reboot
+elif [ "$ACTION" == "n" ]; then
+	echo "Skipping reboot."
 fi
 
 echo "Installation completed."
