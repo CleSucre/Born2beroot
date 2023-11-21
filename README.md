@@ -41,9 +41,3 @@ Example:
 ```bash
 Enter the desired username: julthoma
 ```
-
-### 3. Reboot
-
-```bash
-sudo reboot
-```

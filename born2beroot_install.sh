@@ -1,4 +1,14 @@
-#!/bin/bash
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    born2beroot_install.sh                             :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: julthoma <marvin@42.fr>                    +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2023/11/21 03:13:25 by julthoma          #+#    #+#              #
+#    Updated: 2023/11/21 03:13:25 by julthoma         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
 
 if [[ $EUID -ne 0 ]]; then
     echo "This script must be run with administrative privileges (sudo)."
